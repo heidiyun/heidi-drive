@@ -1,0 +1,67 @@
+.container {
+  margin-top: 40px;
+
+  .login-button {
+    width: 400px;
+    height: 50px;
+    margin: auto;
+    color: white;
+    font-size: 25px;
+    line-height: 50px;
+    font-weight: 600;
+    border-radius: 5px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &[type='user'] {
+    .login-button {
+      background: rgb(190, 192, 196);
+      margin-top: 12px;
+
+      &:hover {
+        background: rgba(111, 111, 112, 0.8);
+      }
+    }
+
+    .profile-layout {
+    }
+    .go-drive-button {
+      width: 400px;
+      height: 50px;
+      background: rgb(67, 134, 252);
+      margin: auto;
+      color: white;
+      font-size: 20px;
+      line-height: 50px;
+      font-weight: 600;
+      border-radius: 5px;
+      margin-top: 50px;
+
+      &:hover {
+        background: rgba(15, 62, 143, 0.8);
+        cursor: pointer;
+      }
+    }
+  }
+
+  &[type='noneUser'] {
+    .login-button {
+      background: rgb(67, 134, 252);
+      margin-top: 250px;
+
+      &:hover {
+        background: rgba(15, 62, 143, 0.8);
+      }
+    }
+
+    .go-drive-button {
+      display: none;
+    }
+    .profile-layout {
+      display: none;
+    }
+  }
+}
