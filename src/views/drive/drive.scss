@@ -170,11 +170,6 @@
       border-bottom-color: #dddddd;
       line-height: 50px;
 
-      div {
-        flex: 1;
-        height: 100%;
-      }
-
       .upload-button {
         width: 120px;
         height: 100%;
@@ -190,7 +185,30 @@
           }
         }
       }
-
+      .drive-item-filter-menu {
+        .action-filter {
+          cursor: pointer;
+          color: #888;
+          transition: color 0.3s;
+          &[selected] {
+            color: rgb(76, 133, 219);
+            i.material-icons {
+              display: inline-block;
+            }
+          }
+          &[asc] {
+            i.material-icons {
+              transform: rotate(180deg);
+            }
+          }
+          i.material-icons {
+            transition: transform 0.3s;
+            display: none;
+            vertical-align: top;
+            line-height: inherit;
+          }
+        }
+      }
       .drive-title-dropdown {
         color: black;
         padding-top: 8px;
@@ -242,16 +260,17 @@
     }
 
     .drive-item-container {
-      padding-top: 53px;
       display: flex;
       flex-wrap: wrap;
       height: calc(100vh - 116px);
       overflow: scroll;
+      padding-top: 53px;
 
       .drive-item-outer {
         width: 25%;
 
         padding-right: 16px;
+
         @include screen-md {
           width: calc(100% / 3);
         }
@@ -276,6 +295,7 @@
           width: 100%;
           height: 200px;
           border-bottom: 1px solid #dddddd;
+          background-size: cover;
         }
 
         .drive-item-title {

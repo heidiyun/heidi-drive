@@ -1,5 +1,4 @@
- 
-<template>
+ <template>
   <div>
     <div class="toolbar">
       <div class="logo"></div>
@@ -39,21 +38,56 @@
             </div>
             <div class="drive-title-dropdown-content" :open="titleClicked"></div>
           </div>
-          <div></div>
+          <div style="flex : 1"></div>
+          <div class="drive-item-filter-menu">
+            <!-- <span class="timesort-up" @click="sortFileList('timeUp')">시간(오름차순) |</span>
+            <span class="timesort-down" @click="sortFileList('timeDown')">시간(내림차순) |</span>
+            <span class="namesort-up" @click="sortFileList('nameUp')">이름(오름차순) |</span>
+            <span class="namesort-down" @click="sortFileList('nameDown')">이름(내림차순)</span>-->
+            <span
+              class="action-filter"
+              @click="filterOption.type = 'uploadDate'; filterOption.order = filterOption.order === 'asc'? 'dsc' : 'asc'"
+              :selected="filterOption.type === 'uploadDate'"
+              :asc="filterOption.order === 'asc'"
+            >
+              시간
+              <i class="material-icons">keyboard_arrow_up</i>
+              |
+            </span>
+            <span
+              class="action-filter"
+              @click="filterOption.type = 'fileName'; filterOption.order = filterOption.order === 'asc'? 'dsc' : 'asc'"
+              :selected="filterOption.type === 'fileName'"
+              :asc="filterOption.order === 'asc'"
+            >
+              이름
+              <i class="material-icons">keyboard_arrow_up</i>
+            </span>
+          </div>
           <div class="upload-button">
             <i class="material-icons" @click="uploadFile">cloud_upload</i>
           </div>
         </div>
 
         <div class="drive-item-container">
-          <div class="drive-item-outer" v-for="(file,i) in fileList" :key="`${i}`">
+          <div class="drive-item-outer" v-for="(file,i) in currentFileList" :key="`${i}`">
             <div class="drive-item">
-              <div class="drive-item-image"></div>
-              <div class="drive-item-title">{{file.fileName}}</div>
+              <div
+                class="drive-item-image"
+                :style="{backgroundImage : `url(${file.data.fileURL})`}"
+              ></div>
+              <div class="drive-item-title">{{file.data.fileName}}</div>
             </div>
           </div>
         </div>
       </div>
+
+      <div
+        style="width : 58px; 
+        border-left-style:solid;
+         border-width : 1px;
+          border-left-color: #dddddd; "
+      ></div>
     </div>
   </div>
 </template>

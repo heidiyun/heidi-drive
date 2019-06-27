@@ -7,12 +7,17 @@ import {
   Storage,
   Auth
 } from '@/lib/firebase-web';
+import Collections from '@/models/collections';
+import DriveFile from './driveFile';
+import _ from 'lodash';
 
 @Component({})
 export default class Drive extends Vue {
   private titleClicked: boolean = false;
   private inputMessage: string = '';
-  private fileList: File[] = [];
+  private fileList: Array<FirestoreDocument<DriveFile>> = [];
+  private rightMouseClicked = false;
+  private sortMenuClickedList: Array<boolean> = new Array<boolean>(4);
   private folderList = [
     '내 드라이브',
     '팀 드라이브',
@@ -22,6 +27,19 @@ export default class Drive extends Vue {
     '중요',
     '휴지통'
   ];
+  private filterOption = {
+    type: 'fileName', // uploadDate
+    order: 'asc'
+  };
+
+  get currentFileList() {
+    // TODO 조건 처리
+    const ret = _.sortBy(this.fileList, (f) => f.data[this.filterOption.type]);
+    if (this.filterOption.order === 'dsc') {
+      return _.reverse(ret);
+    }
+    return ret;
+  }
 
   private uploadFile() {
     const input = document.createElement('input');
@@ -42,32 +60,99 @@ export default class Drive extends Vue {
      */
   }
 
-  private onChange(e) {
+  private async onChange(e) {
     console.log(e);
     const file = e.target.files[0];
     console.log(file);
-    console.log(file.name);
-    // new Storage()
+    console.log(file.uid);
 
-    // Todo Collection File ,
-    //
-    // this.fileList.push(new File(file.name, file.type, file.lastModifiedDate));
+    const fileDocument = Collections.file.create(DriveFile);
+    fileDocument.data.fileName = file.name;
+    fileDocument.data.fileType = file.type;
+    fileDocument.data.uid = this.$store.getters.user.id;
+    fileDocument.data.uploadDate = new Date().toUTCString();
+
+    const storage = new Storage(`/files/${fileDocument.id}`);
+    await storage.upload(file);
+    const url = await storage.getDownloadURL();
+
+    fileDocument.data.fileURL = url;
+    fileDocument.saveSync();
   }
 
   private mounted() {
-    console.log('mounted');
+    Auth.addChangeListener(
+      'drive',
+      async (u) => {
+        if (u === null) {
+          this.$router.push('/login');
+          return;
+        }
 
-    console.log(this.$store.getters.user);
-    // Auth.addChangeListener(
-    //   'drive',
-    //   (u) => {
-    //     if (u === null) {
-    //       this.$router.push('/login');
-    //       return;
-    //     }
-    //     console.log('drive', u);
-    //   },
-    //   true
-    // );
+        // this.fileList = await Collections.file
+        //   .createQuery('uid', '==', this.$store.getters.user.id)
+        //   .exec(DriveFile);
+
+        Collections.file
+          .createQuery('uid', '==', this.$store.getters.user.id)
+          .onChange(DriveFile, (file, state) => {
+            if (state === 'added') {
+              this.fileList.push(file);
+            }
+          });
+      },
+      true
+    );
+  }
+
+  private setSortMenuClickedList(index: number) {
+    for (let i = 0; i < this.sortMenuClickedList.length; i++) {
+      this.sortMenuClickedList[i] = false;
+    }
+
+    this.sortMenuClickedList[index] = true;
+  }
+
+  private sortFileList(type: string): Array<FirestoreDocument<DriveFile>> {
+    switch (type) {
+      case 'timeUp':
+        this.fileList.sort((a, b) => {
+          return (
+            new Date(a.data.uploadDate).getTime() -
+            new Date(b.data.uploadDate).getTime()
+          );
+        });
+
+        break;
+
+      case 'timeDown':
+        this.fileList.sort((a, b) => {
+          return (
+            new Date(b.data.uploadDate).getTime() -
+            new Date(a.data.uploadDate).getTime()
+          );
+        });
+        break;
+
+      case 'nameUp':
+        this.fileList.sort((a, b) => {
+          return a.data.fileName < b.data.fileName
+            ? -1
+            : a.data.fileName > b.data.fileName
+            ? 1
+            : 0;
+        });
+        break;
+      case 'nameDown':
+        this.fileList.sort((a, b) => {
+          return a.data.fileName > b.data.fileName
+            ? -1
+            : a.data.fileName < b.data.fileName
+            ? 1
+            : 0;
+        });
+        break;
+    }
+    return this.fileList;
   }
 }
