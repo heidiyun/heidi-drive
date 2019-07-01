@@ -6,6 +6,10 @@ import User from '@/models/user';
 @Component({})
 export default class App extends Vue {
   private mounted() {
+    if (this.$route.name === null) {
+      this.$router.push('/login');
+    }
+
     Auth.addChangeBeforeListener('login', async (u) => {
       if (u !== null) {
         const exist = await Collections.user.exist(u.uid);
@@ -15,15 +19,10 @@ export default class App extends Vue {
           user.saveSync();
         } else {
           user = Collections.user.create(User, u.uid);
-          user.data.email = this.$store.getters.user.email
-            ? this.$store.getters.user.email
-            : '';
-          user.data.userName = this.$store.getters.user.displayName
-            ? this.$store.getters.user.displayName
-            : '';
-          user.data.photoURL = this.$store.getters.user.photoURL
-            ? this.$store.getters.user.photoURL
-            : '';
+          user.data.email = u.email ? u.email : '';
+          user.data.userName = u.displayName ? u.displayName : '';
+          user.data.photoURL = u.photoURL ? u.photoURL : '';
+          user.data.uid = u.uid ? u.uid : '';
           user.saveSync();
         }
 

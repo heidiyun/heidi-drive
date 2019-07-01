@@ -1,5 +1,8 @@
 .container {
-  margin-top: 40px;
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
 
   .login-button {
     width: 400px;
@@ -27,6 +30,9 @@
     }
 
     .profile-layout {
+      margin: auto;
+      width: 300px;
+      height: 180px;
     }
     .go-drive-button {
       width: 400px;
@@ -50,7 +56,6 @@
   &[type='noneUser'] {
     .login-button {
       background: rgb(67, 134, 252);
-      margin-top: 250px;
 
       &:hover {
         background: rgba(15, 62, 143, 0.8);

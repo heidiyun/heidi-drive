@@ -10,7 +10,10 @@ import {
 import Collections from '@/models/collections';
 import DriveFile from './driveFile';
 import _ from 'lodash';
+import User from '@/models/user';
+import Profile from '@/components/profile';
 
+Vue.component('profile-card', Profile);
 @Component({})
 export default class Drive extends Vue {
   private titleClicked: boolean = false;
@@ -18,27 +21,65 @@ export default class Drive extends Vue {
   private fileList: Array<FirestoreDocument<DriveFile>> = [];
   private rightMouseClicked = false;
   private sortMenuClickedList: Array<boolean> = new Array<boolean>(4);
-  private folderList = [
-    '내 드라이브',
-    '팀 드라이브',
-    '컴퓨터',
-    '공유 문서함',
-    '최근 문서함',
-    '중요',
-    '휴지통'
-  ];
+  private nameFilterModel: string = '';
+  private selectedId = '';
+  private folderList: {
+    user: FirestoreDocument<User>;
+    checked: boolean;
+  }[] = [];
   private filterOption = {
     type: 'fileName', // uploadDate
     order: 'asc'
   };
+  private profileCardOpend = false;
+
+  
 
   get currentFileList() {
     // TODO 조건 처리
-    const ret = _.sortBy(this.fileList, (f) => f.data[this.filterOption.type]);
+    let ret: Array<FirestoreDocument<DriveFile>> = [];
+    for (let i = 0; i < this.folderList.length; i++) {
+      if (this.folderList[i].checked) {
+        for (const f of this.fileList) {
+          if (f.data.uid === this.folderList[i].user.data.uid) {
+            ret.push(f);
+          }
+        }
+      }
+    }
+
+    const ids = _(this.folderList)
+      .filter((folder) => folder.checked)
+      .map((folder) => folder.user.id)
+      .value();
+
+    ret = _.chain(this.fileList)
+      .sortBy((f) => f.data[this.filterOption.type])
+      .filter((f) =>
+        ids.length === 0 ? true : _.some(ids, (id) => f.data.uid === id)
+      )
+      .filter((f) => f.data.fileName.indexOf(this.nameFilterModel) !== -1)
+      .value();
     if (this.filterOption.order === 'dsc') {
       return _.reverse(ret);
     }
-    return ret;
+   return ret;
+  }
+
+  private showFile(file: FirestoreDocument<DriveFile>) {
+    window.location.assign(file.data.fileURL);
+  }
+
+  private async removeFile(file: FirestoreDocument<DriveFile>) {
+    // const index = this.fileList.indexOf(file);
+    // console.warn(index);
+    const storage = new Storage(`/files/${file.id}`);
+    try {
+      await storage.delete();
+      file.delete();
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   private uploadFile() {
@@ -58,6 +99,10 @@ export default class Drive extends Vue {
      * 5. input에 click을 실행한다.
      * 6. change or cancel 이 호출되면 생성한 input을 지운다
      */
+  }
+
+  private clearSearchText() {
+    this.nameFilterModel = '';
   }
 
   private async onChange(e) {
@@ -93,66 +138,39 @@ export default class Drive extends Vue {
         //   .createQuery('uid', '==', this.$store.getters.user.id)
         //   .exec(DriveFile);
 
-        Collections.file
-          .createQuery('uid', '==', this.$store.getters.user.id)
-          .onChange(DriveFile, (file, state) => {
-            if (state === 'added') {
-              this.fileList.push(file);
-            }
-          });
+        const users = await Collections.user.get(User);
+
+        this.folderList = _(users)
+          .map((user) => {
+            return {
+              user,
+              checked: user.id === u.uid
+            };
+          })
+          .sortBy((folder) => folder.user.id !== u.uid)
+          .value();
+
+        this.folderList.forEach((f) => {
+          if (f.user.data.uid === this.$store.getters.user.data.uid) {
+          }
+        });
+
+        console.log(this.folderList[0].user.data.userName);
+
+        Collections.file.clearOnChange();
+
+        Collections.file.onChange(DriveFile, (file, state) => {
+          if (state === 'added') {
+            this.fileList.push(file);
+          } else if (state === 'removed') {
+            const index = _.findIndex(this.fileList, (f) => f.id === file.id);
+            // const index = this.fileList.indexOf(file);
+            console.log('index : ' + index);
+            this.fileList.splice(index);
+          }
+        });
       },
       true
     );
-  }
-
-  private setSortMenuClickedList(index: number) {
-    for (let i = 0; i < this.sortMenuClickedList.length; i++) {
-      this.sortMenuClickedList[i] = false;
-    }
-
-    this.sortMenuClickedList[index] = true;
-  }
-
-  private sortFileList(type: string): Array<FirestoreDocument<DriveFile>> {
-    switch (type) {
-      case 'timeUp':
-        this.fileList.sort((a, b) => {
-          return (
-            new Date(a.data.uploadDate).getTime() -
-            new Date(b.data.uploadDate).getTime()
-          );
-        });
-
-        break;
-
-      case 'timeDown':
-        this.fileList.sort((a, b) => {
-          return (
-            new Date(b.data.uploadDate).getTime() -
-            new Date(a.data.uploadDate).getTime()
-          );
-        });
-        break;
-
-      case 'nameUp':
-        this.fileList.sort((a, b) => {
-          return a.data.fileName < b.data.fileName
-            ? -1
-            : a.data.fileName > b.data.fileName
-            ? 1
-            : 0;
-        });
-        break;
-      case 'nameDown':
-        this.fileList.sort((a, b) => {
-          return a.data.fileName > b.data.fileName
-            ? -1
-            : a.data.fileName < b.data.fileName
-            ? 1
-            : 0;
-        });
-        break;
-    }
-    return this.fileList;
   }
 }

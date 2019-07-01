@@ -91,15 +91,28 @@
   }
 
   .menu {
-    width: 270px;
+    width: 50px;
     height: 100%;
+    padding: 16px 16px 0px 0px;
     .user-profile-button {
       width: 36px;
       height: 36px;
       border-radius: 100%;
       background: gray;
-      float: right;
-      margin: 16px 16px 0px 0px;
+
+      background-size: contain;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .user-profile-card {
+      width: 220px;
+      height: 170px;
+      position: absolute;
+      right: 12px;
+      top: 60px;
     }
   }
 }
@@ -141,17 +154,38 @@
         margin-right: 8px;
       }
     }
-    .folder {
-      height: 42px;
-      width: 95%;
-      font-size: 14px;
-      padding-left: 12px;
-      line-height: 42px;
-      border-radius: 0px 40px 40px 0px;
 
-      &:hover {
-        background: rgb(241, 243, 244);
-        cursor: pointer;
+    .folder-container {
+      .folder {
+        display: flex;
+
+        .folder-user-photo {
+          width: 20px;
+          height: 20px;
+          border-radius: 100%;
+          margin: 10px 16px 0px 0px;
+          background: #000000;
+          background-size: contain;
+        }
+
+        height: 42px;
+        width: 95%;
+        padding-left: 12px;
+        line-height: 42px;
+        font-size: 14px;
+        border-radius: 0px 40px 40px 0px;
+        &[checked] {
+          background: rgba(232, 240, 254, 1);
+          color: rgb(76, 133, 219);
+          &:hover {
+            background: rgba(232, 240, 254, 1);
+          }
+        }
+
+        &:hover {
+          background: rgb(241, 243, 244);
+          cursor: pointer;
+        }
       }
     }
   }
@@ -170,39 +204,26 @@
       border-bottom-color: #dddddd;
       line-height: 50px;
 
-      .upload-button {
-        width: 120px;
-        height: 100%;
-
-        i.material-icons {
-          float: right;
-
-          padding-right: 20px;
-          line-height: inherit;
-          font-size: 30px;
-          &:hover {
-            cursor: pointer;
-          }
-        }
-      }
       .drive-item-filter-menu {
+        padding-right: 20px;
         .action-filter {
+          font-size: 14px;
           cursor: pointer;
-          color: #888;
-          transition: color 0.3s;
           &[selected] {
             color: rgb(76, 133, 219);
+
             i.material-icons {
               display: inline-block;
+              font-size: 18px;
+            }
+            &[asc] {
+              i.material-icons {
+                transform: rotate(180deg);
+              }
             }
           }
-          &[asc] {
-            i.material-icons {
-              transform: rotate(180deg);
-            }
-          }
+
           i.material-icons {
-            transition: transform 0.3s;
             display: none;
             vertical-align: top;
             line-height: inherit;
@@ -262,13 +283,13 @@
     .drive-item-container {
       display: flex;
       flex-wrap: wrap;
+      align-content: flex-start;
       height: calc(100vh - 116px);
       overflow: scroll;
       padding-top: 53px;
 
       .drive-item-outer {
         width: 25%;
-
         padding-right: 16px;
 
         @include screen-md {
@@ -284,6 +305,9 @@
         }
       }
       .drive-item {
+        &[selected] {
+          background: rgba(232, 240, 254, 1);
+        }
         margin-bottom: 16px;
         width: 100%;
         height: 250px;
@@ -291,6 +315,16 @@
         border-radius: 4px;
         border: 1px solid #dddddd;
 
+        &:hover {
+          .drive-item-title {
+            i.material-icons {
+              cursor: pointer;
+
+              opacity: 1;
+              float: right;
+            }
+          }
+        }
         .drive-item-image {
           width: 100%;
           height: 200px;
@@ -299,16 +333,31 @@
         }
 
         .drive-item-title {
+          display: flex;
+          justify-content: space-between;
           width: 100%;
           height: 50px;
           color: black;
-          padding: 12px 12px 0px 12px;
+          padding: 0px 12px 0px 12px;
           font-size: 13px;
           font-weight: bold;
           text-align: start;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          line-height: 50px;
+
+          .file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          i.material-icons {
+            color: red;
+            opacity: 0;
+            font-size: 20px;
+            display: inline-block;
+            vertical-align: top;
+            line-height: inherit;
+          }
         }
       }
     }

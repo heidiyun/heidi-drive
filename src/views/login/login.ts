@@ -19,11 +19,7 @@ export default class Login extends Vue {
   public mounted() {}
 
   private onClickLoginButton() {
-    if (this.$store.getters.user) {
-      Auth.signOut();
-    } else {
-      Auth.signIn(SignInMethod.Google);
-    }
+    Auth.signIn(SignInMethod.Google);
   }
 
   public gotoDrive() {

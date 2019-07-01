@@ -4,4 +4,5 @@ export default class User extends FirestoreDocumentData {
   public userName: string = '';
   public email: string = '';
   public photoURL: string = '';
+  public uid: string = '';
 }
